@@ -8,14 +8,11 @@ function OtpModal() {
         <br/> 
         <br />
 
-       
-
         <p className='font-semibold mr-4'>Enter the sent on your email</p>
         <input  type='text' className='border-2 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
         <br />
-        <input  type='button' value="Submit" className='bg-transparent hover:bg-colorThree text-black-700 font-semibold hover:text-white py-2 px-4 border border-green-300 hover:border-transparent rounded'/>
-        
-       {/* <a href="#" className='text-sm mt-4'>Already a User? Click <span className="text-blue-600 underline">here</span> to Login</a> */}
+        <input  type='button' value="Submit" className='bg-transparent hover:bg-colorThree text-black-700 font-semibold hover:text-white py-2 px-4 border border-colorThree hover:border-transparent rounded'/>
+
     </div>
 
 
