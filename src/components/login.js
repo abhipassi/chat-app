@@ -7,7 +7,7 @@ function Login() {
   const navigate = useNavigate()
     const [email, setEmail] = useState()
     const [password, setPassword] = useState()
-  
+    const [errorMessage, setErrorMessage] = useState(false)
 
     let handleEmail = (e) =>{
       setEmail(e.target.value)
@@ -27,11 +27,19 @@ function Login() {
       
       try{
         let response = await axios.post("http://localhost:3000/user_login",data)
-        console.log(response);
+        // console.log(response);
+        //   navigate('/dashboard')
+        if(response.status === 200) {
+          alert('done')
           navigate('/dashboard')
+        }
+        else if(response.status === 404) {
+          setErrorMessage(true)
+        }
       }
       catch(err){
         console.log(err);
+        setErrorMessage(true)
       }
     }
 
@@ -50,6 +58,7 @@ function Login() {
         <p className='font-semibold mr-16'>Enter your password</p>
         <input  type='text' required onChange={handlePassword} className='border-2 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
         <br />
+        {errorMessage && <p className='font-semibold mr-4 text-red-600'>User not found. Please sign up</p>}
         <input  type='submit' value="Login" onClick={handleSubmit} className='bg-transparent hover:bg-colorThree text-black-700 font-semibold hover:text-white py-2 px-4 border border-colorThree hover:border-transparent rounded'/>
        <a href="/SignUp" className='text-sm mt-4'>New User? Click <span className="text-blue-600 underline">here</span> to Register</a>
     </form>
