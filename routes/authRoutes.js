@@ -7,7 +7,8 @@ const {
     loginUser,
     logoutUser,
     verifyToken,
-    getUsers
+    getUsers,
+    otpVerification
 } = require('../controllers/authControllers')
 
 // route for creating a user
@@ -24,5 +25,8 @@ router.get('/verifyToken', verifyToken)
 
 // get user routes
 router.get('/getUsers', getUsers)
+
+// otp verification
+router.post('/otp',otpVerification)
 
 module.exports = router;

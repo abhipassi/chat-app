@@ -1,54 +1,94 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const userModel = require('../models/users')
+const userModel = require('../models/users');
+const { sendVerificationCode } = require('../middleware/email');
 
 exports.registerUser = async (req, res) => {
   try {
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
     const { username, email, password } = req.body;
     const existingUser = await userModel.findOne({ username });
     if (existingUser) return res.status(400).json({ msg: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await userModel.create({ username, email, password: hashedPassword });
-
+    await userModel.create({ username, email, password: hashedPassword,verificationcode:verificationCode});
     res.status(201).json({ msg: "User registered successfully" });
+    sendVerificationCode(email,verificationCode)
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message});
   }
 };
 
 
-exports.loginUser = async (req,res)=> {
-  // password compare 
-  var {userName , password} = req.body
+// exports.loginUser = async (req,res)=> {
+//   // password compare 
+//   var {email , password} = req.body
+//   console.log(req.body);
+  
+  
+//   try {
+//     let user = await userModel.findOne({email: email})
+//     console.log(user);
+//     if(user){
+//       const isMatch =  bcrypt.compare(password,user.password)
+//       if(isMatch){
+
+//       let token = jwt.sign({email:email },process.env.JWT_SECRET)
+//       res.cookie('token',token)
+//       //  return res.redirect('index.html')
+//       }
+//       else{
+//         if (!isMatch) return res.redirect('/login.html?msg=wrong_password');
+//       }
+//     }
+//     if(!user){  
+//     //  alert("user not found please signup first")
+//     //  res.redirect('signUp.html')
+//     return res.redirect('/signUp.html?msg=user_not_found');
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+exports.loginUser = async (req, res) => {
+  const { email, password } = req.body;
   console.log(req.body);
-  
-  
+
   try {
-    let user = await userModel.findOne({username: userName})
+    const user = await userModel.findOne({ email: email });
     console.log(user);
-    if(user){
-      const isMatch =  bcrypt.compare(password,user.password)
-      if(isMatch){
 
-      let token = jwt.sign({username:userName },process.env.JWT_SECRET)
-      res.cookie('token',token)
-      //  return res.redirect('index.html')
-      }
-      else{
-        if (!isMatch) return res.redirect('/login.html?msg=wrong_password');
-      }
+    if (!user) {
+      // User not found
+      return res.status(404).json({ message: 'User not found. Please sign up.' });
     }
-    if(!user){  
-    //  alert("user not found please signup first")
-    //  res.redirect('signUp.html')
-    return res.redirect('/signUp.html?msg=user_not_found');
 
+    const isMatch =  bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      // Incorrect password
+      return res.status(401).json({ message: 'Wrong password' });
     }
+
+    // Successful login
+    const token = jwt.sign({ email: email }, process.env.JWT_SECRET, {
+      expiresIn: '1d',
+    });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'Lax', // or 'Strict'/'None' if using cross-site cookies
+      secure: false // set to true in production with HTTPS
+    });
+
+    return res.status(200).json({ message: 'Login successful' });
+
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
-}
+};
 
 
 exports.verifyToken = (req, res, next) => {
@@ -77,3 +117,26 @@ exports.logoutUser = async (req,res) => {
   res.clearCookie('token')  
   res.json({msg : "logged out"})
 }
+
+
+exports.otpVerification = async (req, res) => {
+  try {
+    const { verificationcode } = req.body;
+
+    if (!verificationcode) {
+      return res.status(400).json({ message: 'Verification code is required.' });
+    }
+
+    const user = await userModel.findOne({ verificationcode });
+
+    if (user) {
+      return res.status(200).json({ message: 'Verified' });
+    } else {
+      return res.status(404).json({ message: 'Invalid or expired verification code.' });
+    }
+
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    return res.status(500).json({ message: 'Server error during verification.' });
+  }
+};

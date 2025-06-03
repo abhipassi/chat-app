@@ -167,7 +167,7 @@ var cors = require('cors')
 
 
 
-
+app.use(express.json());
 app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -190,6 +190,6 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/', authRoutes);
 
 
-app.listen(process.env.PORT || 5000, () => {
+app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
 })
