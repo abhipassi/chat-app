@@ -23,7 +23,8 @@ router.get('/logout' ,logoutUser)
 router.get('/verifyToken', verifyToken)
 
 // get user routes
-router.get('/getUsers', verifyToken, getUsers)
+// router.get('/getUsers', verifyToken, getUsers)
+router.get('/getUsers', getUsers)
 
 // otp verification
 router.post('/otp',otpVerification)
