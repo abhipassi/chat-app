@@ -1,6 +1,8 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
+
 
 function SignUp() {
 
@@ -9,23 +11,32 @@ function SignUp() {
   const [email, setEmail] = useState()
   const [confirmPass, setConfirmPass] = useState()
 
+  let regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const passRegex = new RegExp("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&\\-+=()])(?=\\S+$).{8,20}$");
+  let passError = "Password must be 8-20 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.No spaces allowed"
+
+
   const navigate = useNavigate()
 
   let handleName = (e) => {
-    setFullname(e.target.value)
-  }
+  let sanitizedName = e.target.value.trim();
+  setFullname(sanitizedName);
+}
 
-  let handleEmail = (e) => {
-    setEmail(e.target.value)
-  }
+let handleEmail = (e) => {
+  let sanitizedEmail = e.target.value.trim();
+  setEmail(sanitizedEmail);
+}
 
-  let handlePassword = (e) => {
-    setPassword(e.target.value)
-  }
+let handlePassword = (e) => {
+  let sanitizedPassword = e.target.value.trim();
+  setPassword(sanitizedPassword);
+}
 
-  let handleConfirmPass = (e) => {
-    setConfirmPass(e.target.value)
-  }
+let handleConfirmPass = (e) => {
+  let sanitizedConfirmPassword = e.target.value.trim();
+  setConfirmPass(sanitizedConfirmPassword);
+}
 
 
   let handleSubmit = async (e) => {
@@ -35,28 +46,55 @@ function SignUp() {
       email: email,
       password: password
     }
+
+    if (!fullname || !email || !password || !confirmPass) {
+      return toast.error("Kindly fill all the credentials");
+    }
+
+    else if (!regex.test(email)) {
+      return toast.error("Kindly enter valid email address")
+    }
+
     if (password !== confirmPass) {
-      alert("Password Does not Match")
-
-    }
-    else if (!fullname || !email || !password || !confirmPass) {
-      alert("Kindly fill all the credentials");
+      return toast.error("Password Does not Match")
     }
 
-    else {
-     await axios.post("http://localhost:3000/user_create",data)
-    //  console.log(response);
-        .then(() => {
-          // alert("Signup Successful");
-          navigate('/otpverify');
-        })
-        .catch((err) => {
-          console.error("Signup failed:", err);
-          alert("Signup failed. Please try again.");
-        });
+    else if (!passRegex.test(password)) {
+      return toast.error(passError)
     }
+
+
+    try {
+      let localEmail = data.email
+      localStorage.setItem('userEmail', localEmail);
+      let response = await axios.post("http://localhost:3000/user_create", data)
+      if (response.status === 200) {
+        toast.success("Otp Sent")
+        navigate('/otpverify')
+      }
+    } catch (error) {
+
+      if (error.response && error.response.status === 400) {
+        // user already exists
+        toast.error("User already exists")
+      }
+      // something went wrong 
+      else if (error.response.status === 500) {
+        toast.error("Something went wrong")
+      }
+      // email verification failed
+      else if (error.response.status === 201) {
+        toast.error("Email verification failed")
+
+      }
+      else {
+        console.error("Unexpected error:", error);
+        toast.error("Unexpected error")
+
+      }
+    }
+
   }
-
 
 
   return (
@@ -68,19 +106,20 @@ function SignUp() {
           <br />
           <br />
 
-          <p className='font-semibold mr-16'>Enter your full Name </p>
-          <input type='text' onChange={handleName} required className='border-2 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease' />
+          <p className='font-semibold text-center w-full'>Enter your full Name</p>
+          <input type='text' onChange={handleName}  className='border-2 h-7 p-1 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease' />
           <br />
 
-          <p className='font-semibold mr-11'>Enter your email address </p>
-          <input type='email' onChange={handleEmail} required className='border-2 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease' />
+          <p className='font-semibold text-center w-full'>Enter your email address </p>
+          <input type='email' onChange={handleEmail} className='border-2 h-7 p-1 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
+
           <br />
-          <p className='font-semibold mr-16 pr-3'>Enter your password</p>
-          <input type='password' onChange={handlePassword} required className='border-2 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
+          <p className='font-semibold text-center w-full'>Enter your password</p>
+          <input type='password' onChange={handlePassword} className='border-2 h-7 p-1 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
           <br />
 
-          <p className='font-semibold mr-14'>Confirm your password</p>
-          <input type='password' onChange={handleConfirmPass} required className='border-2 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
+          <p className='font-semibold text-center w-full'>Confirm your password</p>
+          <input type='password' onChange={handleConfirmPass} className='border-2 h-7 p-1 border-black w-56 rounded-md focus:shadow-md hover:border-colorThree transition duration-300 ease ' />
           <br />
           <input type='submit' value="SignUp" onClick={handleSubmit} className='bg-transparent hover:bg-colorThree text-black-700 font-semibold hover:text-white py-2 px-4 border border-colorThree hover:border-transparent rounded' />
 

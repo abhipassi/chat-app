@@ -1,8 +1,13 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 import Login from "./components/login";
 import SignUp from "./components/signUp";
 import OtpModal from "./components/otpModal";
 import Dashboard from './components/dashboard'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 function App() {
   
   return (
@@ -15,6 +20,10 @@ function App() {
           <Route path="/dashboard" element= {<Dashboard/>}/>
         </Routes>
       </Router>
+       {/* <ToastContainer /> */}
+       <ToastContainer limit={1} /> 
+
+
     </div>
   );
 }

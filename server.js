@@ -168,12 +168,15 @@ var cors = require('cors')
 
 
 app.use(express.json());
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:3001', 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// // mongoDB connection\
+// // mongoDB connection
 async function connectDB(){
   try{  
     await DB.connect(process.env.MONGO_URL)
@@ -184,6 +187,7 @@ async function connectDB(){
   }
 }
 connectDB()
+
 
 // Routes
 const authRoutes = require('./routes/authRoutes');

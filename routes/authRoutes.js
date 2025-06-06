@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 
-
 const {
     registerUser,
     loginUser,
@@ -24,7 +23,7 @@ router.get('/logout' ,logoutUser)
 router.get('/verifyToken', verifyToken)
 
 // get user routes
-router.get('/getUsers', getUsers)
+router.get('/getUsers', verifyToken, getUsers)
 
 // otp verification
 router.post('/otp',otpVerification)
